@@ -64,7 +64,7 @@ $: () =>
 ],
    B: () => [
     "player",
-    sprite("bean", {
+    sprite("hero", {
     }),
     area({
       scale: 0,
@@ -121,7 +121,7 @@ scene("game", () => {
   ]);
 
   const player = add([
-    sprite("bean"),
+    sprite("hero"),
     pos(level.getPos(3, 0)),
     area({ scale: 1 }),
     solid(),
@@ -132,7 +132,7 @@ scene("game", () => {
       jumpforce: 400,
     },
   ]);
-  //player.play("idle");
+  player.play("idle");
 if (player.y >= 500) {
   go("lose")
 }
@@ -158,13 +158,13 @@ if (player.y >= 500) {
   });
 
   onKeyPress(["right","a" ,"left","d"], () => {
-    //player.play("run");
+    player.play("run");
   });
 
   onKeyRelease(["right", "left"], () => {
-    //player.play("idle");
+    player.play("idle");
   });
-  onKeyPress(["up", "space"], () => {
+  onKeyPress(["up", "space","w"], () => {
     if (player.isGrounded() == true) {
       player.jump(player.jumpforce);
     }
@@ -195,9 +195,8 @@ if (player.y >= 500) {
     destroy(c)
     score = score + 1
     scoreLabel.text = "score: "+ score
-    
+    localStorage.setItem("coin",score)
   });
-
   player.onCollide("door", () => {
     if (hasKey == true) {
      if (levelNum == levels.length - 1) {
@@ -207,6 +206,7 @@ if (player.y >= 500) {
         levelNum++
    localStorage.setItem("level",levelNum)
         go("game")
+    scoreLabel.text = "score: " + localStorage.getItem("coin",score)
     } 
     }
       
