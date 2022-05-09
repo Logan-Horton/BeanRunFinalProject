@@ -1,5 +1,5 @@
 kaboom({
-  scale: 1,
+  scale: 1.3,
   background: [10, 150, 200],
 });
 loadSpriteAtlas("https://kaboomjs.com/sprites/dungeon.png", "atlas.json");
@@ -9,7 +9,7 @@ const levelConfig = {
   height: 16,
   pos: vec2(32, 32),
   w: () => ["wall", sprite("wall"), area(), solid()],
-  b: () => ["barrier", sprite("wall"), area(), opacity(0)],
+  b: () => ["barrier", sprite("wall"), area(), opacity(0),scale(0.5)],
   o: () => [
     "enemy",
     sprite("ogre", {
@@ -30,12 +30,26 @@ const levelConfig = {
       anim: "run",
     }),
     area({
-      scale: 0.5,
+      scale: 0.2,
     }),
     //solid(),
     origin("center"),
     {
       xVel: 60,
+    },
+  ],
+  r: () => [
+    "enemy",
+    sprite("redFlyer", {
+      anim: "run",
+    }),
+    area({
+      scale: 1.5,
+    }),
+    //solid(),
+    origin("bot"),
+    {
+      xVel: 30,
     },
   ],
   D: () => [
@@ -60,14 +74,13 @@ $: () =>
     }),
  area(),
  solid(),
- 
 ],
-   B: () => [
+   P: () => [
     "player",
     sprite("hero", {
     }),
     area({
-      scale: 0,
+      scale: 0.5,
     }),
     //solid(),
     origin("center"),
@@ -76,13 +89,12 @@ $: () =>
     },
   ],
 };
-
 //array
 const levels = [
-  [
+  [ 
     "       $ c           ",
     " w     ww        ",
-    " w   $    b    o    b",
+    " w  $    b    o    b",
     " wwwww wwwwwwwwwwwwwwwD",
   ],
   [" w     wwc        ", " w       b    oo   b", " wwwww    wwwwwwwwwwwwwwwD"],
@@ -93,6 +105,57 @@ const levels = [
 
     "                               D",
     "                              wwwww",
+  ],
+  [
+    "       $            ",
+    " w             ",
+    "               ",
+    " wwwww wwwwwwww",
+    "wb           bw",
+    "wb           bw",
+    "wb           bw",
+    "wb           bw",
+    "wb r         bw",
+    "wb           bw",
+    "wb           bw",
+    "wb r         bw",
+    "wb           bw",
+    "wb r         bw",
+    "wb           bw",
+    "wb           bw",
+    "wb r         bw",
+    "wb           bw",
+    "wb r         bw",
+    "wb           bw",
+    "wb           bw",
+    "wb r         bw",
+    "wb           bw",
+    "wb r         bw",
+    "wb           bw",
+    "wb           bw",
+    "wb r         bw",
+    "wb           bw",
+    "wb r         bw",
+    "wb           bw",
+    "wb           bw",
+    "wb r         bw",
+    "wb           bw",
+    "wb r         bw",
+    "wb           bw",
+    "wb           bw",
+    "wb r         bw",
+    "wb           bw",
+    "wb r         bw",
+    "wb           bw",
+    "wb r         bw",
+    "wb           bw",
+    "wb r         bw",
+    "wb           bw",
+    "wb r         bw",
+    "wb           bw",
+    "wb r         bw",
+    "w c   b R    b     D",
+    "wwwwwwwwwwwwwwwwwww",
   ],
 ];
 
@@ -107,8 +170,21 @@ scene("game", () => {
   text("score:0"),
   scale(0.25),
   pos(0,0),
-  z(1)
+  z(1),
+  fixed()
     ]) 
+  const reset = add([
+  text("reset Level"),
+  "reset",
+  scale(0.25),
+  pos(50,450),
+  z(1),
+  fixed(),
+  area()
+    ]) 
+  onClick("reset", () => {
+    go("game");
+  })
   let score = 0
   let totalscore = score + score
   console.log(totalscore)
@@ -123,7 +199,7 @@ scene("game", () => {
   const player = add([
     sprite("hero"),
     pos(level.getPos(3, 0)),
-    area({ scale: 1 }),
+    area({ scale: 0.5 }),
     solid(),
     origin("bot"),
     body(),
@@ -136,6 +212,9 @@ scene("game", () => {
 if (player.y >= 500) {
   go("lose")
 }
+  onUpdate(() => {
+camPos(player.pos.x,player.pos.y)
+}) 
   onUpdate("enemy", (e) => {
     e.move(e.xVel, 0);
   });
@@ -147,7 +226,6 @@ if (player.y >= 500) {
       e.flipX(false);
     }
   });
-
   onKeyDown(["right","d"], () => {
     player.move(player.speed, 0);
     player.flipX(false);
@@ -195,7 +273,7 @@ if (player.y >= 500) {
     destroy(c)
     score = score + 1
     scoreLabel.text = "score: "+ score
-    localStorage.setItem("coin",score)
+    localStorage.setItem("score",score)
   });
   player.onCollide("door", () => {
     if (hasKey == true) {
@@ -206,7 +284,7 @@ if (player.y >= 500) {
         levelNum++
    localStorage.setItem("level",levelNum)
         go("game")
-    scoreLabel.text = "score: " + localStorage.getItem("coin",score)
+    scoreLabel.text = "score: " + localStorage.getItem("score",score)
     } 
     }
       
