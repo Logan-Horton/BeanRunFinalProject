@@ -4,6 +4,9 @@ kaboom({
 });
 loadSpriteAtlas("https://kaboomjs.com/sprites/dungeon.png", "atlas.json");
 loadBean()
+loadSound("click", "click_001.ogg")
+loadSound("cs","handleCoins.ogg")
+loadSound("locked","doorClose_1.ogg")
 const levelConfig = {
   width: 16,
   height: 16,
@@ -183,6 +186,7 @@ scene("game", () => {
   area()
     ]) 
   onClick("reset", () => {
+    play("click")
     go("game");
   })
   let score = 0
@@ -254,7 +258,7 @@ camPos(player.pos.x,player.pos.y)
       hpLabel.text = "hp: " + hp;
       canHurt = false;
     }
-    wait(3, () => {
+    wait(1, () => {
       canHurt = true;
     });
     if (hp == 0) {
@@ -271,11 +275,15 @@ camPos(player.pos.x,player.pos.y)
   });
   player.onCollide("coin", (c) => {
     destroy(c)
+    play("cs")
     score = score + 1
     scoreLabel.text = "score: "+ score
     localStorage.setItem("score",score)
   });
   player.onCollide("door", () => {
+    if (hasKey == false) {
+      play("locked")
+    }
     if (hasKey == true) {
      if (levelNum == levels.length - 1) {
         go("win");
@@ -337,6 +345,7 @@ scene("win", () => {
     area(),
   ])
   onClick("playButton", () => {
+    play("click")
     levelNum = 0;
     go("game", levelNum);
   })
