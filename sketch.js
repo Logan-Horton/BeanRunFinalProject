@@ -7,12 +7,19 @@ loadBean()
 loadSound("click", "click_001.ogg")
 loadSound("cs","handleCoins.ogg")
 loadSound("locked","doorClose_1.ogg")
+loadSound("opened", "doorOpen_1.ogg")
+loadSound("walk2", "footstep00.ogg")
+loadSound("walk", "footstep01.ogg")
+loadSound("back", "jingles_NES01.ogg")
+loadSound("completed", "mission_completed.ogg")
+loadSound("failed", "mission_failed.ogg")
 const levelConfig = {
   width: 16,
   height: 16,
   pos: vec2(32, 32),
-  w: () => ["wall", sprite("wall"), area(), solid()],
-  b: () => ["barrier", sprite("wall"), area(), opacity(0),scale(0.5)],
+  w: () => ["wall", "barrier",sprite("wall"), area(), solid()],
+  b: () => ["barrier",sprite("wall"), area(), opacity(0)],
+  p: () => ["health+",sprite("health+"), area(), origin("top"), solid()], 
   o: () => [
     "enemy",
     sprite("ogre", {
@@ -93,11 +100,12 @@ $: () =>
   ],
 };
 //array
-const levels = [
+scene("game", () => {
+  const levels = [
   [ 
     "       $ c           ",
     " w     ww        ",
-    " w  $    b    o    b",
+    " w     $    b    o  b",
     " wwwww wwwwwwwwwwwwwwwD",
   ],
   [" w     wwc        ", " w       b    oo   b", " wwwww    wwwwwwwwwwwwwwwD"],
@@ -111,63 +119,68 @@ const levels = [
   ],
   [
     "       $            ",
-    " w             ",
-    "               ",
-    " wwwww wwwwwwww",
-    "wb           bw",
-    "wb           bw",
-    "wb           bw",
-    "wb           bw",
-    "wb r         bw",
-    "wb           bw",
-    "wb           bw",
-    "wb r         bw",
-    "wb           bw",
-    "wb r         bw",
-    "wb           bw",
-    "wb           bw",
-    "wb r         bw",
-    "wb           bw",
-    "wb r         bw",
-    "wb           bw",
-    "wb           bw",
-    "wb r         bw",
-    "wb           bw",
-    "wb r         bw",
-    "wb           bw",
-    "wb           bw",
-    "wb r         bw",
-    "wb           bw",
-    "wb r         bw",
-    "wb           bw",
-    "wb           bw",
-    "wb r         bw",
-    "wb           bw",
-    "wb r         bw",
-    "wb           bw",
-    "wb           bw",
-    "wb r         bw",
-    "wb           bw",
-    "wb r         bw",
-    "wb           bw",
-    "wb r         bw",
-    "wb           bw",
-    "wb r         bw",
-    "wb           bw",
-    "wb r         bw",
-    "wb           bw",
-    "wb r         bw",
-    "w c   b R    b     D",
+    " w           w",
+    " w           w",
+    " wwwww wwwwwww",
+    "w            w",
+    "w            w",
+    "w            w",
+    "w            w",
+    "w  r         w",
+    "w            w",
+    "w            w",
+    "w  r         w",
+    "w            w",
+    "w r          w",
+    "w            w",
+    "w            w",
+    "w  r         w",
+    "w            w",
+    "w  r         w",
+    "w            w",
+    "w            w",
+    "w  r         w",
+    "w            w",
+    "w  r         w",
+    "w            w",
+    "w            w",
+    "w  r         w",
+    "w            w",
+    "w  r         w",
+    "w            w",
+    "w            w",
+    "w  r         w",
+    "w            w",
+    "w  r         w",
+    "w            w",
+    "w            w",
+    "w  r         w",
+    "w            w",
+    "w  r         w",
+    "w            w",
+    "w  r         w",
+    "w            w",
+    "w  r         w",
+    "w            w",
+    "w      r     w",
+    "w            w",
+    "w         r  w",
+    "w c   b R   b      D",
     "wwwwwwwwwwwwwwwwwww",
   ],
+[
+"  b                                                    b",
+ " D b R     o   r     R     o     p r       o   r R b mcww", 
+ " wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", 
+],  
 ];
-
 let levelNum = 0;
-scene("game", () => {
+  play("back")
   let hp = 2;
   let canHurt = true;
   let hasKey = false
-  const level = addLevel(levels[levelNum], levelConfig);
+  let score = 0
+  const level = addLevel(levels[levelNum], levelConfig, score);
 
   const scoreLabel = add([
   text("score:0"),
@@ -189,7 +202,7 @@ scene("game", () => {
     play("click")
     go("game");
   })
-  let score = 0
+
   let totalscore = score + score
   console.log(totalscore)
   const hpLabel = add([
@@ -233,16 +246,17 @@ camPos(player.pos.x,player.pos.y)
   onKeyDown(["right","d"], () => {
     player.move(player.speed, 0);
     player.flipX(false);
+    //play("walk")
   });
   onKeyDown(["left","a"], () => {
     player.move(-player.speed, 0);
     player.flipX(true);
+    //play("walk2")
   });
 
   onKeyPress(["right","a" ,"left","d"], () => {
     player.play("run");
   });
-
   onKeyRelease(["right", "left"], () => {
     player.play("idle");
   });
@@ -251,6 +265,11 @@ camPos(player.pos.x,player.pos.y)
       player.jump(player.jumpforce);
     }
   });
+  player.onCollide("health+", (p) => {
+      hp += 90
+    hpLabel.text = "hp: " + hp;
+    destroy(p)
+    })
   player.onCollide("enemy", () => {
     //addKaboom(player.pos)
     if (canHurt == true) {
@@ -268,7 +287,6 @@ camPos(player.pos.x,player.pos.y)
       });
     }
   });
-
   player.onCollide("chest", (c) => {
     c.play("open")
     hasKey = true
@@ -285,6 +303,7 @@ camPos(player.pos.x,player.pos.y)
       play("locked")
     }
     if (hasKey == true) {
+      play("opened")
      if (levelNum == levels.length - 1) {
         go("win");
     } else 
@@ -299,6 +318,7 @@ camPos(player.pos.x,player.pos.y)
   })
 }); //CLOSE game
 scene("lose", () => {
+  play("failed")
   add([text("You lose"), pos(width() / 2, height() * 0.2), origin("center")]);
   add([
     text("RETRY"),
@@ -336,6 +356,7 @@ scene("menu", () => {
   ]);
 });
 scene("win", () => {
+  play("completed")
   add([text("You Win"), pos(width() / 2, height() / 2), origin("center")]);
   add([
     text("play again"),
