@@ -13,6 +13,7 @@ loadSound("walk", "footstep01.ogg")
 loadSound("back", "jingles_NES01.ogg")
 loadSound("completed", "mission_completed.ogg")
 loadSound("failed", "mission_failed.ogg")
+loadSound("powerUp", "power_up.ogg")
 const levelConfig = {
   width: 16,
   height: 16,
@@ -100,8 +101,7 @@ $: () =>
   ],
 };
 //array
-scene("game", () => {
-  const levels = [
+const levels = [
   [ 
     "       $ c           ",
     " w     ww        ",
@@ -169,12 +169,14 @@ scene("game", () => {
     "wwwwwwwwwwwwwwwwwww",
   ],
 [
-"  b                                                    b",
- " D b R     o   r     R     o     p r       o   r R b mcww", 
- " wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", 
+"  b                                                       b",
+ " D b R     o   r     R     o     p r             o   r R b mcww", 
+ " wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", 
 ],  
 ];
+
 let levelNum = 0;
+scene("game", () => {
   play("back")
   let hp = 2;
   let canHurt = true;
@@ -266,6 +268,7 @@ camPos(player.pos.x,player.pos.y)
     }
   });
   player.onCollide("health+", (p) => {
+    play("powerUp")
       hp += 90
     hpLabel.text = "hp: " + hp;
     destroy(p)
